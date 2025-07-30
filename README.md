@@ -6,10 +6,6 @@
 > A clean, responsive dark mode switch using native class toggling and Tailwind CSS v4 — no tailwind.config.js needed.
 
 
-
-
----
-
 🧭 Overview
 
 Tailwind CSS v4 changed the game by removing the config file by default and enabling out-of-the-box dark mode support via the class strategy.
