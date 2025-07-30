@@ -1,21 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
     <title>Dark Mode Toggle</title>
+    <script>
+      tailwind.config = {
+        darkMode: 'class'
+      }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body>
-    <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
-        <div class="flex items-center justify-between p-4">
-            <h1 class="text-xl font-bold text-gray-900 dark:text-white">Dark Mode Toggle</h1>
-            <button id="theme-toggle" class="px-4 py-2 text-sm font-semibold text-gray-900 bg-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-200">
-                Toggle Mode
-            </button>
-        </div>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      /* Avoid flash of light theme on load */
+      html {
+        transition: background-color 0.3s, color 0.3s;
+      }
+    </style>
+    <script>
+      // Apply saved theme early before page renders
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme === "dark" || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+    </script>
+  </head>
+
+  <body class="bg-white text-black dark:bg-gray-900 dark:text-white transition-colors duration-300">
+    <div class="min-h-screen flex flex-col items-center justify-center gap-4">
+      <h1 class="text-2xl font-bold">Dark Mode Toggle</h1>
+      <button id="toggle-theme" class="px-4 py-2 bg-gray-800 text-white dark:bg-white dark:text-black rounded">
+        Toggle Theme
+      </button>
     </div>
 
-    <script src="toggle.js"></script>
-</body>
+    <script>
+      document.getElementById("toggle-theme").addEventListener("click", function () {
+        const isDark = document.documentElement.classList.contains("dark");
+        if (isDark) {
+          document.documentElement.classList.remove("dark");
+          localStorage.setItem("theme", "light");
+        } else {
+          document.documentElement.classList.add("dark");
+          localStorage.setItem("theme", "dark");
+        }
+      });
+    </script>
+  </body>
 </html>
