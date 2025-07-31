@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dark Mode Toggle - Tailwind CSS v4</title>
+    <title>Dark Mode Toggle - Tailwind CSS</title>
+    <link rel="stylesheet" href="toggle.css">
     <script>
-        window.tailwind = {
-          config: {
-            darkmode: 'class',
-          }
+        tailwind.config = {
+            darkMode: 'class',
         };
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -33,7 +32,7 @@
                 Dark Mode Toggle
             </h1>
             <p class="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto transition-colors duration-300">
-                A complete implementation using Tailwind CSS v4 and vanilla JavaScript with localStorage persistence and system preference detection.
+                A complete implementation using Tailwind CSS and vanilla JavaScript with localStorage persistence and system preference detection.
             </p>
         </header>
 
@@ -45,7 +44,7 @@
                 aria-label="Toggle dark mode"
                 role="switch"
             >   
-                <span class="ml-3 font-medium transition-colors duration-300">
+                <span class="font-medium transition-colors duration-300">
                     <span class="dark:hidden">Switch to Dark</span>
                     <span class="hidden dark:inline">Switch to Light</span>
                 </span>
@@ -92,7 +91,7 @@
                 <ul class="space-y-3 text-gray-700 dark:text-gray-300">
                     <li class="flex items-start">
                         <span class="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                        <span>Tailwind CSS v4 CDN integration with no build process required</span>
+                        <span>Tailwind CSS CDN integration with no build process required</span>
                     </li>
                     <li class="flex items-start">
                         <span class="w-2 h-2 bg-purple-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
@@ -116,7 +115,7 @@
 
         <!-- Footer -->
         <footer class="mt-16 text-center text-gray-500 dark:text-gray-400 transition-colors duration-300">
-            <p class="text-sm">Built with Tailwind CSS v4 and vanilla JavaScript</p>
+            <p class="text-sm">Built with Tailwind CSS and vanilla JavaScript</p>
         </footer>
     </div>
 
@@ -183,10 +182,9 @@
             }
         }
 
-      
-        // Initialize theme toggle with DOMContentLoaded event
+        // Initialize theme toggle when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
-          new ThemeToggle();
+            new ThemeToggle();
         });
     </script>
 </body>
