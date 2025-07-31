@@ -5,7 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dark Mode Toggle - Tailwind CSS v4</title>
     <script>
-        tailwind.config = { darkMode: 'class' }
+        window.tailwind = {
+          config: {
+            darkmode: 'class',
+          }
+        };
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -179,9 +183,10 @@
             }
         }
 
-        // Initialize theme toggle when DOM is loaded
+      
+        // Initialize theme toggle with DOMContentLoaded event
         document.addEventListener('DOMContentLoaded', () => {
-            new ThemeToggle();
+          new ThemeToggle();
         });
     </script>
 </body>
