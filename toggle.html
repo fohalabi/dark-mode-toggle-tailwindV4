@@ -1,51 +1,188 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Dark Mode Toggle</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dark Mode Toggle - Tailwind CSS v4</title>
     <script>
-      tailwind.config = {
-        darkMode: 'class'
-      }
+        tailwind.config = { darkMode: 'class' }
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <style>
-      /* Avoid flash of light theme on load */
-      html {
-        transition: background-color 0.3s, color 0.3s;
-      }
-    </style>
     <script>
-      // Apply saved theme early before page renders
-      const savedTheme = localStorage.getItem("theme");
-      if (savedTheme === "dark" || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-      }
+        // Theme initialization script - runs before page renders to prevent flash
+        (function() {
+            // Check for saved theme preference or default to system preference
+            const savedTheme = localStorage.getItem('theme');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
     </script>
-  </head>
+</head>
+<body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300 ease-in-out">
+    <div class="min-h-screen flex flex-col items-center justify-center px-4">
+        <!-- Header Section -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent transition-all duration-300">
+                Dark Mode Toggle
+            </h1>
+            <p class="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto transition-colors duration-300">
+                A complete implementation using Tailwind CSS v4 and vanilla JavaScript with localStorage persistence and system preference detection.
+            </p>
+        </header>
 
-  <body class="bg-white text-black dark:bg-gray-900 dark:text-white transition-colors duration-300">
-    <div class="min-h-screen flex flex-col items-center justify-center gap-4">
-      <h1 class="text-2xl font-bold">Dark Mode Toggle</h1>
-      <button id="toggle-theme" class="px-4 py-2 bg-gray-800 text-white dark:bg-white dark:text-black rounded">
-        Toggle Theme
-      </button>
+        <!-- Theme Toggle Button -->
+        <div class="mb-12">
+            <button 
+                id="themeToggle"
+                class="group relative flex items-center justify-center px-6 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full border border-gray-300 dark:border-gray-600 shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-blue-500/20"
+                aria-label="Toggle dark mode"
+                role="switch"
+            >   
+                <span class="ml-3 font-medium transition-colors duration-300">
+                    <span class="dark:hidden">Switch to Dark</span>
+                    <span class="hidden dark:inline">Switch to Light</span>
+                </span>
+            </button>
+        </div>
+
+        <!-- Demo Content -->
+        <main class="max-w-4xl mx-auto">
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+                <div class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 p-6 rounded-xl border border-blue-200 dark:border-blue-800 transition-all duration-300 hover:shadow-lg">
+                    <div class="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2 text-blue-900 dark:text-blue-100">System Preference</h3>
+                    <p class="text-blue-700 dark:text-blue-300 text-sm">Automatically detects your system's dark mode preference on first visit.</p>
+                </div>
+
+                <div class="bg-gradient-to-br from-purple-50 to-pink-100 dark:from-purple-900/20 dark:to-pink-900/20 p-6 rounded-xl border border-purple-200 dark:border-purple-800 transition-all duration-300 hover:shadow-lg">
+                    <div class="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2 text-purple-900 dark:text-purple-100">Persistent Storage</h3>
+                    <p class="text-purple-700 dark:text-purple-300 text-sm">Your theme preference is saved and restored on page refresh.</p>
+                </div>
+
+                <div class="bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-900/20 dark:to-emerald-900/20 p-6 rounded-xl border border-green-200 dark:border-green-800 transition-all duration-300 hover:shadow-lg md:col-span-2 lg:col-span-1">
+                    <div class="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2 text-green-900 dark:text-green-100">Smooth Transitions</h3>
+                    <p class="text-green-700 dark:text-green-300 text-sm">Elegant animations make theme switching feel seamless and polished.</p>
+                </div>
+            </div>
+
+            <!-- Code Preview Section -->
+            <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 transition-all duration-300">
+                <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">Key Features</h2>
+                <ul class="space-y-3 text-gray-700 dark:text-gray-300">
+                    <li class="flex items-start">
+                        <span class="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                        <span>Tailwind CSS v4 CDN integration with no build process required</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="w-2 h-2 bg-purple-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                        <span>Vanilla JavaScript implementation with localStorage persistence</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                        <span>System preference detection using prefers-color-scheme media query</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="w-2 h-2 bg-yellow-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                        <span>Accessibility features including ARIA labels and keyboard navigation</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="w-2 h-2 bg-red-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                        <span>Flash prevention by applying theme before page renders</span>
+                    </li>
+                </ul>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="mt-16 text-center text-gray-500 dark:text-gray-400 transition-colors duration-300">
+            <p class="text-sm">Built with Tailwind CSS v4 and vanilla JavaScript</p>
+        </footer>
     </div>
 
     <script>
-      document.getElementById("toggle-theme").addEventListener("click", function () {
-        const isDark = document.documentElement.classList.contains("dark");
-        if (isDark) {
-          document.documentElement.classList.remove("dark");
-          localStorage.setItem("theme", "light");
-        } else {
-          document.documentElement.classList.add("dark");
-          localStorage.setItem("theme", "dark");
+        // Theme toggle functionality
+        class ThemeToggle {
+            constructor() {
+                this.button = document.getElementById('themeToggle');
+                this.init();
+            }
+
+            init() {
+                // Add click event listener to toggle button
+                this.button.addEventListener('click', () => this.toggleTheme());
+                
+                // Add keyboard support for accessibility
+                this.button.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        this.toggleTheme();
+                    }
+                });
+
+                // Listen for system theme changes
+                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+                    // Only update if no theme is manually set
+                    if (!localStorage.getItem('theme')) {
+                        this.setTheme(e.matches ? 'dark' : 'light');
+                    }
+                });
+
+                // Update button state based on current theme
+                this.updateButtonState();
+            }
+
+            toggleTheme() {
+                const isDark = document.documentElement.classList.contains('dark');
+                const newTheme = isDark ? 'light' : 'dark';
+                this.setTheme(newTheme);
+            }
+
+            setTheme(theme) {
+                const html = document.documentElement;
+                
+                if (theme === 'dark') {
+                    html.classList.add('dark');
+                } else {
+                    html.classList.remove('dark');
+                }
+
+                // Save theme preference to localStorage
+                localStorage.setItem('theme', theme);
+                
+                // Update button accessibility state
+                this.updateButtonState();
+            }
+
+            updateButtonState() {
+                const isDark = document.documentElement.classList.contains('dark');
+                this.button.setAttribute('aria-checked', isDark.toString());
+                
+                // Update button title for better accessibility
+                this.button.title = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+            }
         }
-      });
+
+        // Initialize theme toggle when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new ThemeToggle();
+        });
     </script>
-  </body>
+</body>
 </html>
