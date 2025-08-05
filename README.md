@@ -1,62 +1,17 @@
-# How to Create a Professional Dark Mode Toggle with Tailwind CSS v4
+# Dark Mode Implementation Guide
 
-Dark mode has become an essential feature in modern web applications. Users expect seamless theme switching that respects their preferences and persists across sessions. In this comprehensive guide, we'll build a production-ready dark mode toggle using Tailwind CSS v4, vanilla JavaScript, and best practices for accessibility and performance.
+A comprehensive guide to implementing dark mode with Tailwind CSS across different frameworks and vanilla JavaScript.
 
 ## Table of Contents
+- [HTML + Vanilla JavaScript](#html--vanilla-javascript)
+- [React + JavaScript](#react--javascript)  
+- [React + TypeScript](#react--typescript)
+- [Key Features](#key-features)
+- [Browser Support](#browser-support)
 
-1. [Understanding Dark Mode Implementation](#understanding-dark-mode-implementation)
-2. [Setting Up Tailwind CSS v4](#setting-up-tailwind-css-v4)
-3. [The Foundation: HTML Structure](#the-foundation-html-structure)
-4. [Preventing Flash of Unstyled Content](#preventing-flash-of-unstyled-content)
-5. [Building the Toggle Button](#building-the-toggle-button)
-6. [JavaScript Implementation](#javascript-implementation)
-7. [Styling with Tailwind Dark Mode](#styling-with-tailwind-dark-mode)
-8. [Adding Smooth Transitions](#adding-smooth-transitions)
-9. [Accessibility Considerations](#accessibility-considerations)
-10. [Advanced Features](#advanced-features)
-11. [Testing and Browser Support](#testing-and-browser-support)
-12. [Production Optimization](#production-optimization)
+## HTML + Vanilla JavaScript
 
-## Understanding Dark Mode Implementation
-
-Dark mode implementation involves three key components:
-
-1. **Theme Detection**: Determining the user's preference (saved or system)
-2. **Theme Application**: Adding/removing CSS classes to switch themes
-3. **Persistence**: Saving the user's choice for future visits
-
-The most robust approach uses a combination of localStorage for persistence and the `prefers-color-scheme` media query for system preference detection.
-
-### The Theme Priority Hierarchy
-
-```
-1. Saved User Preference (localStorage)
-2. System Preference (prefers-color-scheme)
-3. Default Theme (usually light)
-```
-
-## Setting Up Tailwind CSS v4
-
-Tailwind CSS v4 introduces several improvements over previous versions, including better dark mode handling and enhanced CDN support.
-
-### CDN Integration
-
-For rapid prototyping and small projects, use the CDN:
-
-```html
-<script src="https://cdn.tailwindcss.com"></script>
-```
-
-### Key Advantages of Tailwind v4
-
-- **Improved Performance**: Faster compilation and smaller bundle sizes
-- **Enhanced Dark Mode**: Better support for complex dark mode implementations
-- **New Utilities**: Additional classes for modern design patterns
-- **Better CDN**: More reliable and faster content delivery
-
-## The Foundation: HTML Structure
-
-Start with a proper HTML foundation that supports theme switching:
+### Setup
 
 ```html
 <!DOCTYPE html>
@@ -66,9 +21,8 @@ Start with a proper HTML foundation that supports theme switching:
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dark Mode Toggle</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Critical: Theme initialization script -->
     <script>
+        // Initialize theme before page renders to prevent flash
         (function() {
             const savedTheme = localStorage.getItem('theme');
             const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -79,624 +33,121 @@ Start with a proper HTML foundation that supports theme switching:
         })();
     </script>
 </head>
-<body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300">
-    <!-- Coontent Here -->
+<body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-colors">
+    <div class="min-h-screen flex items-center justify-center">
+        <button 
+            id="themeToggle"
+            class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+        >
+            <span class="dark:hidden">Switch to Dark</span>
+            <span class="hidden dark:inline">Switch to Light</span>
+        </button>
+    </div>
+
+    <script>
+        class ThemeToggle {
+            constructor() {
+                this.button = document.getElementById('themeToggle');
+                this.init();
+            }
+
+            init() {
+                this.button.addEventListener('click', () => this.toggleTheme());
+                this.updateButtonState();
+            }
+
+            toggleTheme() {
+                const isDark = document.documentElement.classList.contains('dark');
+                this.setTheme(isDark ? 'light' : 'dark');
+            }
+
+            setTheme(theme) {
+                if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+                localStorage.setItem('theme', theme);
+                this.updateButtonState();
+            }
+
+            updateButtonState() {
+                const isDark = document.documentElement.classList.contains('dark');
+                this.button.setAttribute('aria-pressed', isDark.toString());
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new ThemeToggle();
+        });
+    </script>
 </body>
 </html>
 ```
 
-### Critical Implementation Details
+## React + JavaScript
 
-**1. Immediate Execution Function**: The theme script runs immediately to prevent FOUC
-**2. HTML Element Targeting**: We add the `dark` class to `document.documentElement` (the `<html>` tag)
-**3. Fallback Logic**: Graceful degradation if localStorage isn't available
+### Installation
 
-## Preventing Flash of Unstyled Content
-
-Flash of Unstyled Content (FOUC) occurs when the page briefly shows the wrong theme before JavaScript executes. This creates a jarring user experience.
-
-### The Solution: Synchronous Theme Detection
-
-```javascript
-(function() {
-    const savedTheme = localStorage.getItem('theme');
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
-    if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
-        document.documentElement.classList.add('dark');
-    }
-})();
+```bash
+npm install react react-dom
+# For Tailwind CSS setup, follow: https://tailwindcss.com/docs/guides/create-react-app
 ```
 
-**Why This Works:**
-- Executes before CSS parsing
-- Synchronous execution (no async/await)
-- Minimal DOM manipulation
-- Runs in the `<head>` section
+### Hook Implementation
 
-### Testing FOUC Prevention
+```jsx
+// hooks/useTheme.js
+import { useState, useEffect } from 'react';
 
-To verify FOUC prevention:
-1. Set your system to dark mode
-2. Clear localStorage
-3. Refresh the page multiple times
-4. Check for any white flash before dark theme appears
-
-## Building the Toggle Button
-
-A well-designed toggle button provides clear visual feedback about the current state and the action that will occur.
-
-### Button Structure
-
-```html
-<button 
-    id="themeToggle"
-    class="group relative flex items-center justify-center px-6 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full border border-gray-300 dark:border-gray-600 shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-blue-500/20"
-    aria-label="Toggle dark mode"
-    role="switch"
->
-    
-    <span class="font-medium transition-colors duration-300">
-        <span class="dark:hidden">Switch to Dark</span>
-        <span class="hidden dark:inline">Switch to Light</span>
-    </span>
-</button>
-```
-
-### Design Principles
-
-**1. Visual Hierarchy**: Icons and text work together to communicate state
-**2. Smooth Animations**: Icons rotate and scale for engaging transitions
-**3. Contextual Labels**: Text changes based on current theme
-**4. Accessible Focus**: Clear focus indicators for keyboard navigation
-
-## JavaScript Implementation
-
-The JavaScript implementation follows object-oriented principles for maintainability and extensibility.
-
-### Class-Based Architecture
-
-**JavaScript Implementation:**
-```javascript
-class ThemeToggle {
-    constructor() {
-        this.button = document.getElementById('themeToggle');
-        this.init();
+export const useTheme = () => {
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('theme');
+      if (saved) return saved;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
-
-    init() {
-        // Event listeners
-        this.button.addEventListener('click', () => this.toggleTheme());
-        this.button.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                this.toggleTheme();
-            }
-        });
-
-        // System preference listener
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-            if (!localStorage.getItem('theme')) {
-                this.setTheme(e.matches ? 'dark' : 'light');
-            }
-        });
-
-        this.updateButtonState();
-    }
-
-    toggleTheme() {
-        const isDark = document.documentElement.classList.contains('dark');
-        const newTheme = isDark ? 'light' : 'dark';
-        this.setTheme(newTheme);
-    }
-
-    setTheme(theme) {
-        const html = document.documentElement;
-        
-        if (theme === 'dark') {
-            html.classList.add('dark');
-        } else {
-            html.classList.remove('dark');
-        }
-
-        localStorage.setItem('theme', theme);
-        this.updateButtonState();
-    }
-
-    updateButtonState() {
-        const isDark = document.documentElement.classList.contains('dark');
-        this.button.setAttribute('aria-checked', isDark.toString());
-        this.button.title = isDark ? 'Switch to light mode' : 'Switch to dark mode';
-    }
-}
-
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    new ThemeToggle();
-});
-```
-
-**TypeScript Implementation:**
-```typescript
-type Theme = 'light' | 'dark';
-
-interface ThemeToggleOptions {
-    buttonId?: string;
-    storageKey?: string;
-    onThemeChange?: (theme: Theme) => void;
-}
-
-class ThemeToggle {
-    private button: HTMLButtonElement;
-    private readonly storageKey: string;
-    private readonly onThemeChange?: (theme: Theme) => void;
-    private mediaQuery: MediaQueryList;
-
-    constructor(options: ThemeToggleOptions = {}) {
-        this.storageKey = options.storageKey || 'theme';
-        this.onThemeChange = options.onThemeChange;
-        
-        const buttonElement = document.getElementById(options.buttonId || 'themeToggle');
-        if (!buttonElement || !(buttonElement instanceof HTMLButtonElement)) {
-            throw new Error('Theme toggle button not found or invalid element type');
-        }
-        
-        this.button = buttonElement;
-        this.mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        this.init();
-    }
-
-    private init(): void {
-        // Event listeners with proper typing
-        this.button.addEventListener('click', this.handleClick.bind(this));
-        this.button.addEventListener('keydown', this.handleKeydown.bind(this));
-        
-        // System preference listener
-        this.mediaQuery.addEventListener('change', this.handleSystemThemeChange.bind(this));
-        
-        this.updateButtonState();
-    }
-
-    private handleClick(): void {
-        this.toggleTheme();
-    }
-
-    private handleKeydown(event: KeyboardEvent): void {
-        if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
-            this.toggleTheme();
-        }
-    }
-
-    private handleSystemThemeChange(event: MediaQueryListEvent): void {
-        if (!this.getSavedTheme()) {
-            this.setTheme(event.matches ? 'dark' : 'light');
-        }
-    }
-
-    private getCurrentTheme(): Theme {
-        return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-    }
-
-    private getSavedTheme(): Theme | null {
-        const saved = localStorage.getItem(this.storageKey);
-        return saved === 'dark' || saved === 'light' ? saved : null;
-    }
-
-    public toggleTheme(): void {
-        const currentTheme = this.getCurrentTheme();
-        const newTheme: Theme = currentTheme === 'dark' ? 'light' : 'dark';
-        this.setTheme(newTheme);
-    }
-
-    public setTheme(theme: Theme): void {
-        const html = document.documentElement;
-        
-        if (theme === 'dark') {
-            html.classList.add('dark');
-        } else {
-            html.classList.remove('dark');
-        }
-
-        try {
-            localStorage.setItem(this.storageKey, theme);
-        } catch (error) {
-            console.warn('Could not save theme preference:', error);
-        }
-
-        this.updateButtonState();
-        this.onThemeChange?.(theme);
-    }
-
-    private updateButtonState(): void {
-        const isDark = this.getCurrentTheme() === 'dark';
-        this.button.setAttribute('aria-checked', isDark.toString());
-        this.button.title = isDark ? 'Switch to light mode' : 'Switch to dark mode';
-    }
-
-    public destroy(): void {
-        this.button.removeEventListener('click', this.handleClick);
-        this.button.removeEventListener('keydown', this.handleKeydown);
-        this.mediaQuery.removeEventListener('change', this.handleSystemThemeChange);
-    }
-}
-
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    const themeToggle = new ThemeToggle({
-        onThemeChange: (theme) => {
-            console.log(`Theme changed to: ${theme}`);
-        }
-    });
-});
-```
-```
-
-### Key Implementation Features
-
-**1. Event Delegation**: Single class manages all theme-related functionality
-**2. State Management**: Centralized theme state with consistent updates
-**3. Error Handling**: Graceful degradation if elements aren't found
-**4. Memory Management**: Proper event listener setup and cleanup
-
-### System Preference Monitoring
-
-```javascript
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-    if (!localStorage.getItem('theme')) {
-        this.setTheme(e.matches ? 'dark' : 'light');
-    }
-});
-```
-
-This ensures the app responds to system theme changes, but only when the user hasn't set a manual preference.
-
-## Styling with Tailwind Dark Mode
-
-Tailwind's dark mode implementation uses the `dark:` prefix to apply styles when the `dark` class is present on a parent element.
-
-### Basic Dark Mode Classes
-
-```css
-/* Background colors */
-bg-white dark:bg-gray-900
-
-/* Text colors */
-text-gray-900 dark:text-white
-
-/* Border colors */
-border-gray-300 dark:border-gray-600
-
-/* Hover states */
-hover:bg-gray-200 dark:hover:bg-gray-700
-```
-
-### Advanced Styling Patterns
-
-**1. Gradient Adaptations**:
-```css
-bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400
-```
-
-**2. Shadow Variations**:
-```css
-shadow-lg dark:shadow-gray-800/50
-```
-
-**3. Complex State Combinations**:
-```css
-bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 focus:ring-blue-500/20
-```
-
-### Color Strategy
-
-Effective dark mode requires careful color selection:
-
-**Light Mode Colors:**
-- Background: White, light grays (50-100)
-- Text: Dark grays (700-900), black
-- Accents: Vibrant colors (500-600)
-
-**Dark Mode Colors:**
-- Background: Dark grays (800-900), black
-- Text: Light grays (100-300), white
-- Accents: Lighter variants (400-500)
-
-## Adding Smooth Transitions
-
-Transitions make theme switching feel polished and professional.
-
-### Transition Classes
-
-```css
-/* Basic color transitions */
-transition-colors duration-300
-
-/* Comprehensive transitions */
-transition-all duration-300 ease-in-out
-
-/* Custom timing */
-transition-colors duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]
-```
-
-### Animation Strategies
-
-**1. Icon Animations**:
-```css
-/* Rotation + Scale */
-transition-all duration-300 ease-in-out dark:scale-0 dark:rotate-90
-
-/* Opacity + Transform */
-transition-opacity duration-300 opacity-100 dark:opacity-0
-```
-
-**2. Content Transitions**:
-```css
-/* Conditional visibility */
-<span class="dark:hidden">Light Mode Text</span>
-<span class="hidden dark:inline">Dark Mode Text</span>
-```
-
-**3. Performance Considerations**:
-- Use `transform` and `opacity` for best performance
-- Avoid animating `width`, `height`, or `left/top`
-- Limit simultaneous animations
-
-## Accessibility Considerations
-
-Accessibility is crucial for inclusive design. Our implementation addresses multiple accessibility concerns.
-
-### ARIA Attributes
-
-```html
-<button 
-    aria-label="Toggle dark mode"
-    role="switch"
-    aria-checked="false"
-    title="Switch to dark mode"
->
-```
-
-**Key ARIA Features:**
-- `aria-label`: Describes the button's purpose
-- `role="switch"`: Indicates toggle functionality
-- `aria-checked`: Current state for screen readers
-- `title`: Additional context on hover
-
-### Keyboard Navigation
-
-```javascript
-this.button.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        this.toggleTheme();
-    }
-});
-```
-
-**Supported Keys:**
-- `Enter`: Activates the toggle
-- `Space`: Alternative activation method
-- `Tab`: Standard focus navigation
-
-### Focus Management
-
-```css
-focus:outline-none focus:ring-4 focus:ring-blue-500/20
-```
-
-Clear focus indicators help keyboard users navigate effectively.
-
-### Reduced Motion Support
-
-For users with motion sensitivity:
-
-```css
-@media (prefers-reduced-motion: reduce) {
-    .transition-all {
-        transition-duration: 0.01ms !important;
-    }
-}
-```
-
-## React + TypeScript Integration
-
-### Custom Hook Implementation
-
-```typescript
-// hooks/useTheme.ts
-import { useState, useEffect, useCallback } from 'react';
-
-type Theme = 'light' | 'dark';
-
-interface UseThemeReturn {
-  theme: Theme;
-  toggleTheme: () => void;
-  setTheme: (theme: Theme) => void;
-  systemTheme: Theme;
-}
-
-export const useTheme = (storageKey: string = 'theme'): UseThemeReturn => {
-  const [theme, setThemeState] = useState<Theme>('light');
-  const [systemTheme, setSystemTheme] = useState<Theme>('light');
-
-  // Get system preference
-  const getSystemTheme = useCallback((): Theme => {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }, []);
-
-  // Apply theme to DOM
-  const applyTheme = useCallback((newTheme: Theme): void => {
-    const html = document.documentElement;
-    
-    if (newTheme === 'dark') {
-      html.classList.add('dark');
-    } else {
-      html.classList.remove('dark');
-    }
-  }, []);
-
-  // Set theme with persistence
-  const setTheme = useCallback((newTheme: Theme): void => {
-    setThemeState(newTheme);
-    applyTheme(newTheme);
-    
-    try {
-      localStorage.setItem(storageKey, newTheme);
-    } catch (error) {
-      console.warn('Could not save theme preference:', error);
-    }
-  }, [storageKey, applyTheme]);
-
-  // Toggle between themes
-  const toggleTheme = useCallback((): void => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-  }, [theme, setTheme]);
+    return 'light';
+  });
 
   useEffect(() => {
-    // Initialize theme
-    const savedTheme = localStorage.getItem(storageKey) as Theme | null;
-    const systemPreference = getSystemTheme();
+    const root = document.documentElement;
     
-    setSystemTheme(systemPreference);
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
     
-    const initialTheme = savedTheme || systemPreference;
-    setThemeState(initialTheme);
-    applyTheme(initialTheme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
-    // Listen for system preference changes
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleSystemThemeChange = (e: MediaQueryListEvent): void => {
-      const newSystemTheme = e.matches ? 'dark' : 'light';
-      setSystemTheme(newSystemTheme);
-      
-      // Only update if no manual preference is set
-      if (!localStorage.getItem(storageKey)) {
-        setThemeState(newSystemTheme);
-        applyTheme(newSystemTheme);
-      }
-    };
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
 
-    mediaQuery.addEventListener('change', handleSystemThemeChange);
-    
-    return () => {
-      mediaQuery.removeEventListener('change', handleSystemThemeChange);
-    };
-  }, [storageKey, getSystemTheme, applyTheme]);
-
-  return { theme, toggleTheme, setTheme, systemTheme };
+  return { theme, toggleTheme };
 };
 ```
 
-### Context Provider Implementation
+### Component Implementation
 
-```typescript
-// contexts/ThemeContext.tsx
-import React, { createContext, useContext, ReactNode } from 'react';
+```jsx
+// components/ThemeToggle.jsx
+import React from 'react';
 import { useTheme } from '../hooks/useTheme';
 
-type Theme = 'light' | 'dark';
-
-interface ThemeContextType {
-  theme: Theme;
-  toggleTheme: () => void;
-  setTheme: (theme: Theme) => void;
-  systemTheme: Theme;
-}
-
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
-
-export const useThemeContext = (): ThemeContextType => {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error('useThemeContext must be used within a ThemeProvider');
-  }
-  return context;
-};
-
-interface ThemeProviderProps {
-  children: ReactNode;
-  storageKey?: string;
-}
-
-export const ThemeProvider: React.FC<ThemeProviderProps> = ({ 
-  children, 
-  storageKey = 'theme' 
-}) => {
-  const themeUtils = useTheme(storageKey);
-
-  return (
-    <ThemeContext.Provider value={themeUtils}>
-      {children}
-    </ThemeContext.Provider>
-  );
-};
-```
-
-### Toggle Component Implementation
-
-```typescript
-// components/ThemeToggle.tsx
-import React from 'react';
-import { useThemeContext } from '../contexts/ThemeContext';
-
-interface ThemeToggleProps {
-  className?: string;
-  showLabel?: boolean;
-}
-
-const ThemeToggle: React.FC<ThemeToggleProps> = ({ 
-  className = '', 
-  showLabel = true 
-}) => {
-  const { theme, toggleTheme } = useThemeContext();
-
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>): void => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      toggleTheme();
-    }
-  };
+const ThemeToggle = () => {
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <button
       onClick={toggleTheme}
-      onKeyDown={handleKeyDown}
-      className={`group relative flex items-center justify-center px-6 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full border border-gray-300 dark:border-gray-600 shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-blue-500/20 ${className}`}
-      aria-label="Toggle dark mode"
-      aria-checked={theme === 'dark'}
-      role="switch"
-      title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+      className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+      aria-pressed={theme === 'dark'}
     >
-      {/* Sun Icon */}
-      <svg 
-        className={`w-5 h-5 text-yellow-500 transition-all duration-300 ease-in-out ${
-          theme === 'dark' ? 'scale-0 rotate-90' : 'scale-100 rotate-0'
-        }`}
-        fill="currentColor" 
-        viewBox="0 0 20 20"
-        aria-hidden="true"
-      >
-        <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd" />
-      </svg>
-      
-      {/* Moon Icon */}
-      <svg 
-        className={`w-5 h-5 text-blue-400 absolute transition-all duration-300 ease-in-out ${
-          theme === 'dark' ? 'scale-100 rotate-0' : 'scale-0 rotate-90'
-        }`}
-        fill="currentColor" 
-        viewBox="0 0 20 20"
-        aria-hidden="true"
-      >
-        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-      </svg>
-      
-      {showLabel && (
-        <span className="ml-3 font-medium transition-colors duration-300">
-          {theme === 'dark' ? 'Switch to Light' : 'Switch to Dark'}
-        </span>
-      )}
+      <span className="dark:hidden">Switch to Dark</span>
+      <span className="hidden dark:inline">Switch to Light</span>
     </button>
   );
 };
@@ -704,218 +155,192 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
 export default ThemeToggle;
 ```
 
-### Usage in React App
+### App Component
+
+```jsx
+// App.jsx
+import React from 'react';
+import ThemeToggle from './components/ThemeToggle';
+
+function App() {
+  return (
+    <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-colors">
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Dark Mode Demo</h1>
+          <ThemeToggle />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default App;
+```
+
+## React + TypeScript
+
+### Hook Implementation
+
+```typescript
+// hooks/useTheme.ts
+import { useState, useEffect } from 'react';
+
+type Theme = 'light' | 'dark';
+
+interface UseThemeReturn {
+  theme: Theme;
+  toggleTheme: () => void;
+}
+
+export const useTheme = (): UseThemeReturn => {
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('theme') as Theme | null;
+      if (saved) return saved;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return 'light';
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = (): void => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
+
+  return { theme, toggleTheme };
+};
+```
+
+### Component Implementation
+
+```typescript
+// components/ThemeToggle.tsx
+import React from 'react';
+import { useTheme } from '../hooks/useTheme';
+
+const ThemeToggle: React.FC = () => {
+  const { theme, toggleTheme } = useTheme();
+
+  return (
+    <button
+      onClick={toggleTheme}
+      className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+      aria-pressed={theme === 'dark'}
+      type="button"
+    >
+      <span className="dark:hidden">Switch to Dark</span>
+      <span className="hidden dark:inline">Switch to Light</span>
+    </button>
+  );
+};
+
+export default ThemeToggle;
+```
+
+### App Component
 
 ```typescript
 // App.tsx
 import React from 'react';
-import { ThemeProvider } from './contexts/ThemeContext';
 import ThemeToggle from './components/ThemeToggle';
 
 const App: React.FC = () => {
   return (
-    <ThemeProvider>
-      <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300">
-        <header className="p-4 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold">My App</h1>
-            <ThemeToggle />
-          </div>
-        </header>
-        <main className="p-4">
-          {/* Your app content */}
-        </main>
+    <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-colors">
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Dark Mode Demo</h1>
+          <ThemeToggle />
+        </div>
       </div>
-    </ThemeProvider>
+    </div>
   );
 };
 
 export default App;
 ```
 
-### System Preference Detection
+### TypeScript Configuration
 
-The `prefers-color-scheme` media query detects system-level theme preferences:
+Add to your `tsconfig.json`:
 
-```javascript
-const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-```
-
-**Browser Support:**
-- Chrome 76+
-- Firefox 67+
-- Safari 12.1+
-- Edge 79+
-
-### Local Storage Management
-
-```javascript
-// Save preference
-localStorage.setItem('theme', 'dark');
-
-// Retrieve preference
-const savedTheme = localStorage.getItem('theme');
-
-// Remove preference (fall back to system)
-localStorage.removeItem('theme');
-```
-
-**Error Handling:**
-```javascript
-try {
-    localStorage.setItem('theme', theme);
-} catch (error) {
-    // Handle storage quota exceeded or privacy settings
-    console.warn('Could not save theme preference:', error);
+```json
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": ["dom", "dom.iterable", "es6"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx"
+  },
+  "include": ["src"]
 }
 ```
 
-### Multiple Toggle Instances
+## Key Features
 
-For apps with multiple toggle buttons:
+### ✅ System Preference Detection
+Automatically detects user's system dark mode preference on first visit.
 
-```javascript
-class ThemeManager {
-    constructor() {
-        this.toggles = [];
-        this.init();
-    }
+### ✅ Persistent Storage
+Theme preference is saved in localStorage and restored on page refresh.
 
-    init() {
-        document.querySelectorAll('[data-theme-toggle]').forEach(button => {
-            this.toggles.push(new ThemeToggle(button));
-        });
-    }
+### ✅ Flash Prevention
+Theme is applied before page renders to prevent flash of wrong theme.
 
-    syncToggles() {
-        this.toggles.forEach(toggle => toggle.updateButtonState());
-    }
-}
-```
+### ✅ Accessibility
+- Proper ARIA attributes (`aria-pressed`)
+- Keyboard navigation support
+- Focus indicators
 
-## Testing and Browser Support
+### ✅ Smooth Transitions
+CSS transitions provide smooth theme switching animations.
 
-### Cross-Browser Testing
+## Browser Support
 
-**Modern Browsers (Full Support):**
-- Chrome 76+: Full support including prefers-color-scheme
-- Firefox 67+: Complete implementation
-- Safari 12.1+: All features supported
-- Edge 79+: Chromium-based, full support
+- **Chrome**: 76+
+- **Firefox**: 67+
+- **Safari**: 12.1+
+- **Edge**: 79+
 
-**Legacy Browsers (Graceful Degradation):**
-- Internet Explorer: Basic toggle works, no transitions
-- Older mobile browsers: Core functionality preserved
+## Tailwind CSS Classes Used
 
-### Testing Checklist
+| Class | Purpose |
+|-------|---------|
+| `dark:` | Applies styles only in dark mode |
+| `bg-white dark:bg-gray-900` | Light/dark background |
+| `text-gray-900 dark:text-white` | Light/dark text |
+| `transition-colors` | Smooth color transitions |
+| `hidden dark:inline` | Show/hide elements based on theme |
 
-1. **Theme Persistence**: Refresh page, check theme maintains
-2. **System Preference**: Change OS theme, verify app responds
-3. **FOUC Prevention**: No white flash on page load
-4. **Keyboard Navigation**: Tab to button, activate with Enter/Space
-5. **Screen Reader**: Test with VoiceOver/NVDA
-6. **Mobile**: Touch interaction works correctly
-7. **Performance**: No layout thrashing during transitions
+## Important Notes
 
-### Automated Testing
+1. **CDN Usage**: Tailwind CSS CDN supports class-based dark mode by default. No additional configuration needed.
 
-```javascript
-// Jest test example
-describe('ThemeToggle', () => {
-    test('should toggle theme class on button click', () => {
-        const toggle = new ThemeToggle();
-        const initialState = document.documentElement.classList.contains('dark');
-        
-        toggle.toggleTheme();
-        
-        expect(document.documentElement.classList.contains('dark')).toBe(!initialState);
-    });
-});
-```
+2. **SSR Considerations**: For Next.js or other SSR frameworks, ensure theme initialization runs on the client side only.
 
-## Production Optimization
+3. **Performance**: The localStorage check runs synchronously to prevent theme flash, which is necessary for good UX.
 
-### Performance Considerations
-
-**1. Minimize DOM Queries:**
-```javascript
-// Good: Cache references
-constructor() {
-    this.button = document.getElementById('themeToggle');
-    this.html = document.documentElement;
-}
-
-// Avoid: Repeated queries
-toggleTheme() {
-    document.documentElement.classList.toggle('dark'); // Repeated query
-}
-```
-
-**2. Debounce Rapid Interactions:**
-```javascript
-toggleTheme = debounce(() => {
-    // Theme toggle logic
-}, 100);
-```
-
-**3. CSS Optimization:**
-```css
-/* Use transform instead of changing layout properties */
-transform: scale(0) rotate(90deg);
-
-/* Prefer opacity for show/hide */
-opacity: 0;
-```
-
-### Bundle Size Optimization
-
-**Tailwind Purging:**
-```javascript
-// tailwind.config.js
-module.exports = {
-    content: ['./src/**/*.{html,js}'],
-    darkMode: 'class',
-    // ... other config
-}
-```
-
-**Critical CSS:**
-```html
-<style>
-    /* Inline critical theme styles */
-    .dark { color-scheme: dark; }
-    body { transition: background-color 0.3s; }
-</style>
-```
-
-### Security Considerations
-
-**LocalStorage Safety:**
-```javascript
-// Validate stored values
-const isValidTheme = (theme) => ['light', 'dark'].includes(theme);
-
-const savedTheme = localStorage.getItem('theme');
-if (savedTheme && isValidTheme(savedTheme)) {
-    this.setTheme(savedTheme);
-}
-```
-
-**Content Security Policy:**
-```html
-<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' cdn.tailwindcss.com;">
-```
-
-## Conclusion
-
-Building a professional dark mode toggle requires attention to multiple technical and UX considerations. Key takeaways:
-
-1. **Prevent FOUC** with synchronous theme detection
-2. **Respect user preferences** through system detection and persistence
-3. **Prioritize accessibility** with proper ARIA attributes and keyboard support
-4. **Optimize performance** with efficient DOM manipulation and transitions
-5. **Test thoroughly** across browsers and assistive technologies
-
-The implementation we've built provides a solid foundation that can be adapted for any project size, from simple websites to complex web applications. The modular JavaScript architecture makes it easy to extend with additional features like theme customization, multiple theme options, or integration with design systems.
-
-By following these patterns and best practices, you'll create dark mode functionality that delights users and maintains professional standards for accessibility and performance.
+4. **Customization**: You can extend the theme system by adding more themes or custom color schemes.
